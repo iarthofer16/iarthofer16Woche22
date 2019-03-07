@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,12 +15,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AndroidDemo";
-    List<Car> cars = new ArrayList<>();
-    ArrayAdapter mAdapter;
+    ArrayList<Car> cars = new ArrayList<>();
+    MyAdapter mAdapter;
+    Map<String, Integer> map = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+        fillSpinner1();
     }
     private InputStream getInputStreamForAsset (String filename)
     {
@@ -66,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 String[] split = line.split(",");
                 cars.add(new Car(split[1],split[2], split[11],split[12]));
-
+                map.put(split[11], 1);
             }
         }
         catch (Exception e)
@@ -74,13 +79,15 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        Log.d(TAG,"readAssets: sort");
         Collections.sort(cars);
     }
-    private void bindAdapterToListView (ListView lv, List list)
+    private void bindAdapterToListView (ListView lv, ArrayList list)
     {
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
+        mAdapter = new MyAdapter(this, list);
         lv.setAdapter(mAdapter);
     }
+
     private void doMySearch(String string)
     {
         Log.d(TAG,"readAssets: Search");
@@ -94,5 +101,17 @@ public class MainActivity extends AppCompatActivity {
         }
         ListView view = findViewById(R.id.listView);
         bindAdapterToListView(view,newList);
+    }
+
+    private void fillSpinner1()
+    {
+        Spinner spinner = findViewById(R.id.spinner);
+        ArrayList list = new ArrayList<>();
+        for(String s : map.keySet())
+        {
+            list.add(s);
+        }
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
+        spinner.setAdapter(adapter);
     }
 }
