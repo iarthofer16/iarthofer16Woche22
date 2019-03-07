@@ -18,8 +18,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AndroidDemo";
-    List cars = new ArrayList<>();
+    List<Car> cars = new ArrayList<>();
     ArrayAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void bindAdapterToListView (ListView lv, List list)
     {
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,cars);
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
         lv.setAdapter(mAdapter);
     }
     private void doMySearch(String string)
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList newList = new ArrayList<>();
         for(Car c : cars)
         {
-            if(c.getFirstname().toLowerCase().startsWith(string.toLowerCase())||c.getLastname().toLowerCase().startsWith(string.toLowerCase()))
+            if(c.getFirstName().toLowerCase().startsWith(string.toLowerCase())||c.getLastName().toLowerCase().startsWith(string.toLowerCase()))
             {
                 newList.add(c);
             }
