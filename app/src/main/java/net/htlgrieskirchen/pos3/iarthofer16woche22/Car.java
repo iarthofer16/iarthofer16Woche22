@@ -8,6 +8,9 @@ public class Car implements Comparable<Car>{
     private String modell;
 
     public Car(String firstName, String lastName, String producer, String modell) {
+        if(firstName.equals("") || lastName.equals("") || producer.equals("") || modell.equals("")){
+            throw new IllegalArgumentException();
+        }
         this.firstName = firstName;
         this.lastName = lastName;
         this.producer = producer;
