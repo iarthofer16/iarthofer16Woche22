@@ -1,13 +1,22 @@
 package net.htlgrieskirchen.pos3.iarthofer16woche22;
 
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,6 +57,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fillSpinner1();
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               openDialog();
+            }
+        });
     }
     private InputStream getInputStreamForAsset (String filename)
     {
@@ -113,5 +130,19 @@ public class MainActivity extends AppCompatActivity {
         }
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
         spinner.setAdapter(adapter);
+
+        spinner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+    }
+
+
+    private void createDialog()
+    {
+
+
     }
 }
