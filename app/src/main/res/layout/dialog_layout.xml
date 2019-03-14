@@ -12,11 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <EditText
-        android:id="@+id/dialog_modell"
+    <Spinner
+        android:id="@+id/dialog_model"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Model" />
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/dialog_firstName"

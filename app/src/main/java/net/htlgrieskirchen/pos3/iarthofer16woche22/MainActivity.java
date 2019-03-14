@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AndroidDemo";
     ArrayList<Car> cars = new ArrayList<>();
     MyAdapter mAdapter;
-    Map<String, Integer> map = new HashMap<>();
+    Map<String, List<String>> map = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +90,15 @@ public class MainActivity extends AppCompatActivity {
             {
                 String[] split = line.split(",");
                 cars.add(new Car(split[1],split[2], split[11],split[12]));
-                map.put(split[11], 1);
+                if(map.keySet().contains(split[11])){
+                    List<String> values = map.get(split[11]);
+                    values.add(split[12]);
+                }else{
+                    List<String> values = new ArrayList<>();
+                    values.add(split[12]);
+                    map.put(split[11], values);
+                }
+
             }
         }
         catch (Exception e)
@@ -107,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void doMySearch(String string)
     {
-        Log.d(TAG,"readAssets: Search");
         ArrayList newList = new ArrayList<>();
         for(Car c : cars)
         {
@@ -122,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fillSpinner1()
     {
+        Log.d(TAG,"fill Spinner");
         Spinner spinner = findViewById(R.id.spinner);
         ArrayList list = new ArrayList<>();
         for(String s : map.keySet())
@@ -131,18 +141,77 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
         spinner.setAdapter(adapter);
 
-        spinner.setOnClickListener(new View.OnClickListener() {
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Spinner s = findViewById(R.id.spinner);
+                    ArrayList newList = new ArrayList<>();
+                    for(Car c : cars)
+                    {
+                        if(c.getProducer().toLowerCase().startsWith(String.valueOf(s.getSelectedItem()).toLowerCase()))
+                        {
+                            newList.add(c);
+                        }
+                    }
+                    ListView viewById = findViewById(R.id.listView);
+                    bindAdapterToListView(viewById, newList);
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
+
+    }
+
+    private void fillDialogSpinner(Spinner spinner)
+    {
+        Log.d(TAG,"fill Spinner");
+        ArrayList list = new ArrayList<>();
+        for(String s : map.keySet())
+        {
+            list.add(s);
+        }
+        ArrayAdapter adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, list);
+        spinner.setAdapter(adapter);
+
+//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                Spinner s = findViewById(R.id.spinner);
+//                String chosen = String.valueOf(s.getSelectedItem()).toLowerCase();
+//                List<String> models = map.get(chosen);
+//
+//                ArrayAdapter m_adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, models);
+//                Spinner spinner1 = findViewById(R.id.dialog_spinner);
+//                spinner1.setAdapter(m_adapter);
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//            }
+//        });
     }
 
 
-    private void createDialog()
-    {
+    private void openDialog() {
+//        Log.d(TAG,"open Dialog");
+//        ExampleDialog exampleDialog = new ExampleDialog();
+//
+//        fillDialogSpinner(exampleDialog);
+//
+//        exampleDialog.show(getSupportFragmentManager(), "example dialog");
 
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_layout, null);
+        dialogBuilder.setView(dialogView);
 
+        Spinner dialogSpinner = (Spinner) dialogView .findViewById(R.id.dialog_spinner);
+
+        fillDialogSpinner(dialogSpinner);
+
+        dialogBuilder.show();
     }
 }
