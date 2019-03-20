@@ -31,16 +31,24 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AndroidDemo";
     ArrayList<Car> cars = new ArrayList<>();
-    MyAdapter mAdapter;
+    ArrayList<Car> backup = new ArrayList<>();
+    MyAdapter listViewAdapter;
     Map<String, List<String>> map = new HashMap<>();
+
+    ListView listView;
+    Spinner main_producers;
+    Spinner dialog_producers;
+    Spinner dialog_models;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         readAssets();
-        ListView lv = findViewById(R.id.listView);
-        bindAdapterToListView(lv, cars);
+        listView = findViewById(R.id.listView);
+        listViewAdapter = new MyAdapter(this, cars);
+        listView.setAdapter(listViewAdapter);
+
         SearchView s = findViewById(R.id.searchView);
         s.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -56,7 +64,11 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        fillSpinner1();
+        main_producers = findViewById(R.id.spinner);
+        dialog_producers = findViewById(R.id.dialog_spinner);
+        dialog_models = findViewById(R.id.dialog_model);
+
+        fillSpinner();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -85,10 +97,10 @@ public class MainActivity extends AppCompatActivity {
             line = bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 String[] split = line.split(",");
-                cars.add(new Car(split[1], split[2], split[11], split[12]));
+                backup.add(new Car(split[1], split[2], split[11], split[12]));
                 if (map.keySet().contains(split[11])) {
-                    List<String> values = map.get(split[11]);
-                    values.add(split[12]);
+                    map.get(split[11]).add(split[12]);
+
                 } else {
                     List<String> values = new ArrayList<>();
                     values.add(split[12]);
@@ -105,44 +117,38 @@ public class MainActivity extends AppCompatActivity {
         Collections.sort(cars);
     }
 
-    private void bindAdapterToListView(ListView lv, ArrayList list) {
-        mAdapter = new MyAdapter(this, list);
-        lv.setAdapter(mAdapter);
-    }
-
     private void doMySearch(String string) {
-        ArrayList newList = new ArrayList<>();
-        for (Car c : cars) {
+        cars.clear();
+        for (Car c : backup) {
             if (c.getFirstName().toLowerCase().startsWith(string.toLowerCase()) || c.getLastName().toLowerCase().startsWith(string.toLowerCase())) {
-                newList.add(c);
+                cars.add(c);
             }
         }
-        ListView view = findViewById(R.id.listView);
-        bindAdapterToListView(view, newList);
+        listViewAdapter.notifyDataSetChanged();
     }
 
-    private void fillSpinner1() {
+    private void fillSpinner() {
         Log.d(TAG, "fill Spinner");
-        Spinner spinner = findViewById(R.id.spinner);
         ArrayList list = new ArrayList<>();
         for (String s : map.keySet()) {
             list.add(s);
         }
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
-        spinner.setAdapter(adapter);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list);
+        main_producers.setAdapter(adapter);
+
+        main_producers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Spinner s = findViewById(R.id.spinner);
-                ArrayList newList = new ArrayList<>();
-                for (Car c : cars) {
+                cars.clear();
+                for (Car c : backup) {
                     if (c.getProducer().toLowerCase().startsWith(String.valueOf(s.getSelectedItem()).toLowerCase())) {
-                        newList.add(c);
+                        cars.add(c);
                     }
                 }
-                ListView viewById = findViewById(R.id.listView);
-                bindAdapterToListView(viewById, newList);
+
+                listViewAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -153,35 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void fillDialogSpinner(Spinner spinner) {
-        Log.d(TAG, "fill Spinner");
-        ArrayList list = new ArrayList<>();
-        for (String s : map.keySet()) {
-            list.add(s);
-        }
-        ArrayAdapter adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, list);
-        spinner.setAdapter(adapter);
 
-        spinner.setSelection(0);
-
-//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                Spinner s = findViewById(R.id.dialog_spinner);
-//                String chosen = String.valueOf(s.getSelectedItem());
-//                List<String> models = map.get(chosen);
-//
-//                ArrayAdapter m_adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, models);
-//                Spinner spinner1 = findViewById(R.id.dialog_model);
-//                spinner1.setAdapter(m_adapter);
-        //writeCsv();
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//            }
-//        });
-    }
 
 
     private void openDialog() {
@@ -198,11 +176,14 @@ public class MainActivity extends AppCompatActivity {
                 Spinner producer = dialogView.findViewById(R.id.dialog_spinner);
                 Spinner model = dialogView.findViewById(R.id.dialog_model);
 
-                cars.add(new Car(String.valueOf(firstName.getText()), String.valueOf(lastName.getText()), String.valueOf(producer.getSelectedItem()), String.valueOf(model.getSelectedItem())));
+                Car newCar = new Car(String.valueOf(firstName.getText()), String.valueOf(lastName.getText()), String.valueOf(producer.getSelectedItem()), String.valueOf(model.getSelectedItem()));
+                backup.add(newCar);
+                cars.add(newCar);
 
-                mAdapter.notifyDataSetChanged();
+                listViewAdapter.notifyDataSetChanged();
             }
         });
+
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -211,13 +192,43 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        Spinner dialogSpinner = (Spinner) dialogView.findViewById(R.id.dialog_spinner);
-        fillDialogSpinner(dialogSpinner);
+        fillDialogSpinner();
 
         AlertDialog ad = dialogBuilder.create();
         ad.show();
 
+        writeCsv();
+
     }
+
+    private void fillDialogSpinner() {
+        Log.d(TAG, "fill Spinner");
+        ArrayList producers = new ArrayList<>();
+        for (String s : map.keySet()) {
+            producers.add(s);
+        }
+        ArrayAdapter adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, producers);
+        dialog_producers.setAdapter(adapter);
+
+        dialog_producers.setSelection(0);
+
+
+//        dialog_producers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                String chosen = String.valueOf(dialog_producers.getSelectedItem());
+//                List<String> models = map.get(chosen);
+//
+//                ArrayAdapter m_adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, models);
+//                dialog_models.setAdapter(m_adapter);
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//            }
+//        });
+    }
+
 
     private void writeCsv() {
         Log.d(TAG, "writeCsv");
